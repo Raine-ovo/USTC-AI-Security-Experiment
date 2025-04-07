@@ -4,3 +4,7 @@ word2vec*
 *.pt
 
 *.zip
+
+Text_Attack/data/*
+
+*.csv
