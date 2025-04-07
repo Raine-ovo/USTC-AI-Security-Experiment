@@ -1,0 +1,6 @@
+# Ignore word2vec* files
+word2vec*
+# Ignore model files
+*.pt
+
+*.zip
