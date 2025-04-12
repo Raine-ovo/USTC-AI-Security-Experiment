@@ -8,3 +8,5 @@ word2vec*
 Text_Attack/data/*
 
 *.csv
+
+Certified_Robustness/data/*
