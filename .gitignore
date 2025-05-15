@@ -16,3 +16,6 @@ Adversarial_Defense/answer.ipynb
 Backdoor/answer.ipynb
 Certified_Robustness/answer.ipynb
 Text_Attack/answer.ipynb
+
+Model_Steal/__pycache__/*
+Model_Steal/data/*
