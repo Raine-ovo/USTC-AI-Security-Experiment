@@ -5,18 +5,27 @@ import torch.nn.functional as F
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, in_channels, out_channels, stride=1):
+    def __init__(self, in_channels, out_channels, stride=1, norm_layer=None):
         super(BasicBlock, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.GroupNorm
+        # 计算GroupNorm的组数，通常设为32或16
+        num_groups = min(32, out_channels)
+        if out_channels % num_groups != 0:
+            num_groups = 16
+            if out_channels % num_groups != 0:
+                num_groups = 1
+        
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.bn1 = norm_layer(num_groups, out_channels)
         self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.bn2 = norm_layer(num_groups, out_channels)
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_channels != self.expansion*out_channels:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_channels, self.expansion*out_channels, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(self.expansion*out_channels)
+                norm_layer(num_groups, self.expansion*out_channels)
             )
 
     def forward(self, x):
@@ -27,12 +36,17 @@ class BasicBlock(nn.Module):
         return out
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10):
+    def __init__(self, block, num_blocks, num_classes=10, norm_layer=None):
         super(ResNet, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.GroupNorm
         self.in_channels = 64
+        self.norm_layer = norm_layer
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
+        # 计算GroupNorm的组数
+        num_groups = min(32, 64)
+        self.bn1 = norm_layer(num_groups, 64)
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
@@ -44,7 +58,7 @@ class ResNet(nn.Module):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
         for stride in strides:
-            layers.append(block(self.in_channels, out_channels, stride))
+            layers.append(block(self.in_channels, out_channels, stride, self.norm_layer))
             self.in_channels = out_channels * block.expansion
         return nn.Sequential(*layers)
 
@@ -60,4 +74,4 @@ class ResNet(nn.Module):
         return out
 
 def ResNet18(num_classes=10):
-    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes)  # 修改此处
+    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
