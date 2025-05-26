@@ -20,3 +20,9 @@ Text_Attack/answer.ipynb
 Model_Steal/__pycache__/*
 Model_Steal/data/*
 Model_Steal/main.ipynb
+
+Data_Safety/__pycache__/*
+Data_Safety/data/*
+Data_Safety/main.ipynb
+Data_Safety/answer.ipynb
+Data_Safety/img.ipynb
